@@ -1,0 +1,10 @@
+plugins {
+    id "org.springframework.boot" version "2.1.8.RELEASE"
+}
+
+dependencies {
+    implementation project(":receiver")
+    implementation "org.springframework.boot:spring-boot-starter"
+    implementation "org.projectlombok:lombok:1.18.10"
+    implementation "com.github.serezhka:java-airplay-lib:1.0.0"
+}

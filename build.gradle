@@ -1,0 +1,24 @@
+plugins {
+    id "io.spring.dependency-management" version "1.0.8.RELEASE"
+}
+
+subprojects {
+    group = 'com.github.serezhka'
+    version = '0.0.1-SNAPSHOT'
+
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    repositories {
+        jcenter()
+        maven {
+            url "https://jitpack.io"
+        }
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom("org.springframework.boot:spring-boot-dependencies:2.1.8.RELEASE")
+        }
+    }
+}
