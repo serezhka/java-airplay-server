@@ -1,11 +1,11 @@
 plugins {
+    id "io.freefair.lombok"
     id "org.springframework.boot" version "2.1.8.RELEASE"
 }
 
 dependencies {
     implementation project(":receiver")
     implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.projectlombok:lombok:1.18.10"
     implementation 'net.java.dev.jna:jna:5.4.0'
     implementation 'net.java.dev.jna:jna-platform:5.4.0'
     implementation "uk.co.caprica:vlcj:4.2.0"
