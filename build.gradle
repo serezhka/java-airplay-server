@@ -9,6 +9,10 @@ subprojects {
 
     apply plugin: 'java'
     apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'java-library'
+
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 
     repositories {
         jcenter()

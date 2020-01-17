@@ -9,3 +9,11 @@ dependencies {
     implementation "io.netty:netty-all:4.1.42.Final"
     implementation "com.github.serezhka:java-airplay-lib:1.0.0"
 }
+
+bootJar {
+    enabled = false
+}
+
+jar {
+  enabled = true
+}
