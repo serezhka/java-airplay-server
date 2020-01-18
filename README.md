@@ -10,6 +10,18 @@ It's under development. Tested with iPhone X (iOS 13.3). Many things are not sup
 
 Main module which handles RTSP requests, parse and decrypts fairplay encrypted mirror data.
 
+## tcp-forwarder
+
+Forwards mirror data to TCP
+
+Play it with [GStreamer](https://gstreamer.freedesktop.org/) or [FFmpeg](https://www.ffmpeg.org/)
+
+```Shell
+gst-launch-1.0 -v tcpclientsrc port=5002 ! h264parse ! avdec_h264 ! autovideosink
+
+ffplay -f h264 -codec:v h264 -i tcp://localhost:5002 -v debug
+```
+
 ## h264-dump
 
 Saves mirror data stream to h264 file
