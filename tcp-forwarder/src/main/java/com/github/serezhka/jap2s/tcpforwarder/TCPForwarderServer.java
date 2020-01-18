@@ -4,14 +4,12 @@ import com.github.serezhka.jap2s.receiver.handler.mirroring.MirrorDataConsumer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +20,6 @@ import java.net.InetSocketAddress;
 
 @Slf4j
 @Component
-@ChannelHandler.Sharable
 public class TCPForwarderServer extends SimpleChannelInboundHandler<ByteBuf> implements MirrorDataConsumer {
 
     private final EventLoopGroup bossGroup;
@@ -72,11 +69,13 @@ public class TCPForwarderServer extends SimpleChannelInboundHandler<ByteBuf> imp
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
         this.ctx = ctx;
+        log.info("TCP receiver connected!");
     }
 
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) {
         this.ctx = null;
+        log.info("TCP receiver disconnected!");
     }
 
     @Override
@@ -86,8 +85,9 @@ public class TCPForwarderServer extends SimpleChannelInboundHandler<ByteBuf> imp
 
     private void sendData(ByteBuf message) {
         if (ctx != null) {
-            ctx.executor().execute(() -> ctx.writeAndFlush(new BinaryWebSocketFrame(message)));
-            //ctx.writeAndFlush(new BinaryWebSocketFrame(message));
+            ctx.executor().execute(() -> ctx.writeAndFlush(message.retain()));
+            //ctx.writeAndFlush(message.retain());
+            log.debug("TCP data sent!");
         } else message.release();
     }
 }
