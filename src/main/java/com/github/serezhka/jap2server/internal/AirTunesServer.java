@@ -5,6 +5,7 @@ import com.github.serezhka.jap2server.internal.handler.FairPlayHandler;
 import com.github.serezhka.jap2server.internal.handler.HeartBeatHandler;
 import com.github.serezhka.jap2server.internal.handler.PairingHandler;
 import com.github.serezhka.jap2server.internal.handler.RTSPHandler;
+import com.github.serezhka.jap2server.internal.handler.mirroring.MirroringHandler;
 import com.github.serezhka.jap2server.internal.handler.session.SessionManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
@@ -22,12 +23,14 @@ import io.netty.handler.codec.rtsp.RtspDecoder;
 import io.netty.handler.codec.rtsp.RtspEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 
-@Slf4j
 public class AirTunesServer implements Runnable {
+
+    private static final Logger log = LoggerFactory.getLogger(MirroringHandler.class);
 
     private final PairingHandler pairingHandler;
     private final FairPlayHandler fairPlayHandler;

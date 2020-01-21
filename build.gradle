@@ -1,7 +1,6 @@
 plugins {
     id 'maven'
     id 'java-library'
-    id "io.freefair.lombok" version "4.1.6"
 }
 
 group 'com.github.serezhka'
@@ -22,7 +21,6 @@ dependencies {
     implementation "io.netty:netty-all:4.1.42.Final"
     implementation "com.github.serezhka:java-airplay-lib:1.0.0"
     implementation "org.slf4j:slf4j-api:1.7.30"
-
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.4.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.4.2"

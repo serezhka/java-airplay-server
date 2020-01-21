@@ -1,11 +1,7 @@
 package com.github.serezhka.jap2server.internal.handler.mirroring;
 
 import io.netty.buffer.ByteBuf;
-import lombok.Getter;
-import lombok.ToString;
 
-@Getter
-@ToString
 class AirPlayHeader {
     private final int payloadSize;
     private final short payloadType;
@@ -29,5 +25,49 @@ class AirPlayHeader {
             width = (int) header.readFloatLE();
             height = (int) header.readFloatLE();
         }
+    }
+
+    public int getPayloadSize() {
+        return payloadSize;
+    }
+
+    public short getPayloadType() {
+        return payloadType;
+    }
+
+    public short getPayloadOption() {
+        return payloadOption;
+    }
+
+    public int getWidthSource() {
+        return widthSource;
+    }
+
+    public void setWidthSource(int widthSource) {
+        this.widthSource = widthSource;
+    }
+
+    public int getHeightSource() {
+        return heightSource;
+    }
+
+    public void setHeightSource(int heightSource) {
+        this.heightSource = heightSource;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
     }
 }

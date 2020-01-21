@@ -12,12 +12,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 
-@Slf4j
 public class AirPlayReceiver implements Runnable {
+
+    private static final Logger log = LoggerFactory.getLogger(MirroringHandler.class);
 
     private final int port;
     private final MirroringHandler mirroringHandler;
