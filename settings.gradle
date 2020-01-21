@@ -1,5 +1,1 @@
-include 'receiver'
-include 'jmuxer-player'
-include 'vlcj-player'
-include 'h264-dump'
-include 'tcp-forwarder'
+rootProject.name = 'java-airplay-server'
