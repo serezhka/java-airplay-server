@@ -32,3 +32,5 @@ It's under development.
 ## More examples
 
 see repo [java-airplay-server-examples](https://github.com/serezhka/java-airplay-server-examples)
+
+<img src="https://github.com/serezhka/java-airplay-server-examples/blob/media/gstreamer_playback.gif" width="600">
