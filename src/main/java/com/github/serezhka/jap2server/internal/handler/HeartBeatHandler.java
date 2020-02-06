@@ -15,8 +15,10 @@ public class HeartBeatHandler extends AirTunesHandler {
 
     @Override
     protected boolean handleRequest(ChannelHandlerContext ctx, Session session, FullHttpRequest request) {
-        // TODO /feedback
-        var response = createResponseForRequest(request);
-        return sendResponse(ctx, request, response);
+        if (request.uri().equals("/feedback")) {
+            var response = createResponseForRequest(request);
+            return sendResponse(ctx, request, response);
+        }
+        return false;
     }
 }

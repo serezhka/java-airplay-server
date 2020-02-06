@@ -56,7 +56,7 @@ public class MirroringHandler extends SimpleChannelInboundHandler<ByteBuf> {
                         } else if (header.getPayloadType() == 1) {
                             processSPSPPS(payload);
                         } else {
-                            log.error("Unhandled payload type: {}", header.getPayloadType());
+                            log.warn("Unhandled payload type: {}", header.getPayloadType());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

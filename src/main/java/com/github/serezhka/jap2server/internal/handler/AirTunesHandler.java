@@ -11,8 +11,12 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.rtsp.RtspResponseStatuses;
 import io.netty.handler.codec.rtsp.RtspVersions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AirTunesHandler extends ChannelInboundHandlerAdapter {
+
+    private static final Logger log = LoggerFactory.getLogger(AirTunesHandler.class);
 
     private static final String HEADER_CSEQ = "CSeq";
     private static final String HEADER_ACTIVE_REMOTE = "Active-Remote";
@@ -52,6 +56,7 @@ public abstract class AirTunesHandler extends ChannelInboundHandlerAdapter {
         if (!HttpUtil.isKeepAlive(request)) {
             future.addListener(ChannelFutureListener.CLOSE);
         }
+        log.info("Request {} {} is handled!", request.method(), request.uri());
         return true;
     }
 }

@@ -34,9 +34,9 @@ public class RTSPHandler extends AirTunesHandler {
         var response = createResponseForRequest(request);
         if (RtspMethods.SETUP.equals(request.method())) {
             session.getAirPlay().rtspSetup(new ByteBufInputStream(request.content()),
-                    new ByteBufOutputStream(response.content()), airPlayPort, airTunesPort, 7011);
+                    new ByteBufOutputStream(response.content()), airPlayPort, airTunesPort, 7011, 4998, 4999);
 
-            if (session.getAirPlay().isFairPlayReady()) {
+            if (session.getAirPlay().isFairPlayReady() && session.getAirPlayReceiverThread() == null) {
                 var mirroringHandler = new MirroringHandler(session.getAirPlay(), mirrorDataConsumer);
                 var airPlayReceiver = new AirPlayReceiver(airPlayPort, mirroringHandler);
                 var airPlayReceiverThread = new Thread(airPlayReceiver);
