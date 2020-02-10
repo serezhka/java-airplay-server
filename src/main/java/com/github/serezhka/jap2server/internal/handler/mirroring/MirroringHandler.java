@@ -40,7 +40,7 @@ public class MirroringHandler extends SimpleChannelInboundHandler<ByteBuf> {
             if (header != null && msg.readableBytes() > 0) {
 
                 if (payload == null || payload.writableBytes() == 0) {
-                    payload = ByteBufAllocator.DEFAULT.ioBuffer(header.getPayloadSize(), header.getPayloadSize());
+                    payload = ctx.alloc().directBuffer(header.getPayloadSize(), header.getPayloadSize());
                 }
 
                 msg.readBytes(payload, Math.min(payload.writableBytes(), msg.readableBytes()));
