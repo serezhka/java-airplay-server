@@ -17,7 +17,7 @@ public class MirroringHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private final AirPlay airPlay;
     private final MirrorDataConsumer dataConsumer;
 
-    private AirPlayHeader header;
+    private MirroringHeader header;
     private ByteBuf payload;
 
     public MirroringHandler(AirPlay airPlay, MirrorDataConsumer dataConsumer) {
@@ -32,7 +32,7 @@ public class MirroringHandler extends SimpleChannelInboundHandler<ByteBuf> {
             if (header == null) {
                 msg.readBytes(headerBuf, Math.min(headerBuf.writableBytes(), msg.readableBytes()));
                 if (headerBuf.writableBytes() == 0) {
-                    header = new AirPlayHeader(headerBuf);
+                    header = new MirroringHeader(headerBuf);
                     headerBuf.clear();
                 }
             }
@@ -96,29 +96,29 @@ public class MirroringHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private void processSPSPPS(ByteBuf payload) {
         payload.readerIndex(6);
 
-        short lengthofSPS = (short) payload.readUnsignedShort();
-        byte[] sequenceParameterSet = new byte[lengthofSPS];
+        short spsLen = (short) payload.readUnsignedShort();
+        byte[] sequenceParameterSet = new byte[spsLen];
         payload.readBytes(sequenceParameterSet);
 
         payload.skipBytes(1); // pps count
 
-        short lengthofPPS = (short) payload.readUnsignedShort();
-        byte[] pictureParameterSet = new byte[lengthofPPS];
+        short ppsLen = (short) payload.readUnsignedShort();
+        byte[] pictureParameterSet = new byte[ppsLen];
         payload.readBytes(pictureParameterSet);
 
-        int spsPpsLen = lengthofSPS + lengthofPPS + 8;
+        int spsPpsLen = spsLen + ppsLen + 8;
         log.info("SPS PPS length: {}", spsPpsLen);
         byte[] spsPps = new byte[spsPpsLen];
         spsPps[0] = 0;
         spsPps[1] = 0;
         spsPps[2] = 0;
         spsPps[3] = 1;
-        System.arraycopy(sequenceParameterSet, 0, spsPps, 4, lengthofSPS);
-        spsPps[lengthofSPS + 4] = 0;
-        spsPps[lengthofSPS + 5] = 0;
-        spsPps[lengthofSPS + 6] = 0;
-        spsPps[lengthofSPS + 7] = 1;
-        System.arraycopy(pictureParameterSet, 0, spsPps, 8 + lengthofSPS, lengthofPPS);
+        System.arraycopy(sequenceParameterSet, 0, spsPps, 4, spsLen);
+        spsPps[spsLen + 4] = 0;
+        spsPps[spsLen + 5] = 0;
+        spsPps[spsLen + 6] = 0;
+        spsPps[spsLen + 7] = 1;
+        System.arraycopy(pictureParameterSet, 0, spsPps, 8 + spsLen, ppsLen);
 
         dataConsumer.onData(spsPps);
     }

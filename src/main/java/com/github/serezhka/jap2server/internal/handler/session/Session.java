@@ -7,7 +7,9 @@ public class Session {
     private final AirPlay airPlay;
     private Thread airPlayReceiverThread;
 
-    Session() {airPlay = new AirPlay();}
+    Session() {
+        airPlay = new AirPlay();
+    }
 
     public AirPlay getAirPlay() {
         return airPlay;

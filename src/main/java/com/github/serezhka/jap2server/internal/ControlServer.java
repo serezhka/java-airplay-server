@@ -1,10 +1,10 @@
 package com.github.serezhka.jap2server.internal;
 
 import com.github.serezhka.jap2server.MirrorDataConsumer;
-import com.github.serezhka.jap2server.internal.handler.FairPlayHandler;
-import com.github.serezhka.jap2server.internal.handler.HeartBeatHandler;
-import com.github.serezhka.jap2server.internal.handler.PairingHandler;
-import com.github.serezhka.jap2server.internal.handler.RTSPHandler;
+import com.github.serezhka.jap2server.internal.handler.control.FairPlayHandler;
+import com.github.serezhka.jap2server.internal.handler.control.HeartBeatHandler;
+import com.github.serezhka.jap2server.internal.handler.control.PairingHandler;
+import com.github.serezhka.jap2server.internal.handler.control.RTSPHandler;
 import com.github.serezhka.jap2server.internal.handler.mirroring.MirroringHandler;
 import com.github.serezhka.jap2server.internal.handler.session.SessionManager;
 import io.netty.bootstrap.ServerBootstrap;
@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 
-public class AirTunesServer implements Runnable {
+public class ControlServer implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(MirroringHandler.class);
 
@@ -39,7 +39,7 @@ public class AirTunesServer implements Runnable {
 
     private final int airTunesPort;
 
-    public AirTunesServer(int airPlayPort, int airTunesPort, MirrorDataConsumer mirrorDataConsumer) {
+    public ControlServer(int airPlayPort, int airTunesPort, MirrorDataConsumer mirrorDataConsumer) {
         this.airTunesPort = airTunesPort;
         SessionManager sessionManager = new SessionManager();
         pairingHandler = new PairingHandler(sessionManager);
@@ -76,12 +76,12 @@ public class AirTunesServer implements Runnable {
                     .childOption(ChannelOption.SO_REUSEADDR, true)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             var channelFuture = serverBootstrap.bind().sync();
-            log.info("AirTunes server listening on port: {}", airTunesPort);
+            log.info("Control server listening on port: {}", airTunesPort);
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-            log.info("AirTunes server stopped");
+            log.info("Control server stopped");
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }

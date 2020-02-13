@@ -1,7 +1,8 @@
-package com.github.serezhka.jap2server.internal.handler;
+package com.github.serezhka.jap2server.internal.handler.control;
 
 import com.github.serezhka.jap2server.MirrorDataConsumer;
-import com.github.serezhka.jap2server.internal.AirPlayReceiver;
+import com.github.serezhka.jap2server.internal.AudioReceiver;
+import com.github.serezhka.jap2server.internal.MirroringReceiver;
 import com.github.serezhka.jap2server.internal.handler.mirroring.MirroringHandler;
 import com.github.serezhka.jap2server.internal.handler.session.Session;
 import com.github.serezhka.jap2server.internal.handler.session.SessionManager;
@@ -15,7 +16,7 @@ import io.netty.handler.codec.rtsp.RtspMethods;
 import java.nio.charset.StandardCharsets;
 
 @ChannelHandler.Sharable
-public class RTSPHandler extends AirTunesHandler {
+public class RTSPHandler extends ControlHandler {
 
     private final MirrorDataConsumer mirrorDataConsumer;
     private final int airPlayPort;
@@ -34,14 +35,16 @@ public class RTSPHandler extends AirTunesHandler {
         var response = createResponseForRequest(request);
         if (RtspMethods.SETUP.equals(request.method())) {
             session.getAirPlay().rtspSetup(new ByteBufInputStream(request.content()),
-                    new ByteBufOutputStream(response.content()), airPlayPort, airTunesPort, 7011, 4998, 4999);
+                    new ByteBufOutputStream(response.content()), airPlayPort, airTunesPort, 7011, 4998, airTunesPort);
 
             if (session.getAirPlay().isFairPlayReady() && session.getAirPlayReceiverThread() == null) {
                 var mirroringHandler = new MirroringHandler(session.getAirPlay(), mirrorDataConsumer);
-                var airPlayReceiver = new AirPlayReceiver(airPlayPort, mirroringHandler);
+                var airPlayReceiver = new MirroringReceiver(airPlayPort, mirroringHandler);
                 var airPlayReceiverThread = new Thread(airPlayReceiver);
                 session.setAirPlayReceiverThread(airPlayReceiverThread);
                 airPlayReceiverThread.start();
+                var audioReceiver = new AudioReceiver();
+                new Thread(audioReceiver).start();
             }
             return sendResponse(ctx, request, response);
         } else if (RtspMethods.GET_PARAMETER.equals(request.method())) {

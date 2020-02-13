@@ -1,4 +1,4 @@
-package com.github.serezhka.jap2server.internal.handler;
+package com.github.serezhka.jap2server.internal.handler.control;
 
 import com.github.serezhka.jap2server.internal.handler.session.Session;
 import com.github.serezhka.jap2server.internal.handler.session.SessionManager;
@@ -14,16 +14,18 @@ import io.netty.handler.codec.rtsp.RtspVersions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AirTunesHandler extends ChannelInboundHandlerAdapter {
+public abstract class ControlHandler extends ChannelInboundHandlerAdapter {
 
-    private static final Logger log = LoggerFactory.getLogger(AirTunesHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(ControlHandler.class);
 
     private static final String HEADER_CSEQ = "CSeq";
     private static final String HEADER_ACTIVE_REMOTE = "Active-Remote";
 
     private final SessionManager sessionManager;
 
-    protected AirTunesHandler(SessionManager sessionManager) {this.sessionManager = sessionManager;}
+    protected ControlHandler(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
 
     @Override
     public final void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {

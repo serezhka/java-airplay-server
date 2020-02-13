@@ -2,7 +2,7 @@ package com.github.serezhka.jap2server.internal.handler.mirroring;
 
 import io.netty.buffer.ByteBuf;
 
-class AirPlayHeader {
+class MirroringHeader {
     private final int payloadSize;
     private final short payloadType;
     private final short payloadOption;
@@ -12,7 +12,7 @@ class AirPlayHeader {
     private int width;
     private int height;
 
-    AirPlayHeader(ByteBuf header) {
+    MirroringHeader(ByteBuf header) {
         this.payloadSize = (int) header.readUnsignedIntLE();
         this.payloadType = (short) (header.readUnsignedShortLE() & 0xff);
         this.payloadOption = (short) header.readUnsignedShortLE();

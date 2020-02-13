@@ -17,14 +17,14 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 
-public class AirPlayReceiver implements Runnable {
+public class MirroringReceiver implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(MirroringHandler.class);
 
     private final int port;
     private final MirroringHandler mirroringHandler;
 
-    public AirPlayReceiver(int port, MirroringHandler mirroringHandler) {
+    public MirroringReceiver(int port, MirroringHandler mirroringHandler) {
         this.port = port;
         this.mirroringHandler = mirroringHandler;
     }
