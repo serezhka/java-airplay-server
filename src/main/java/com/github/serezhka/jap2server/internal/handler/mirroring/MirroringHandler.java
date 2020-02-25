@@ -52,7 +52,8 @@ public class MirroringHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
                     try {
                         if (header.getPayloadType() == 0) {
-                            processVideo(airPlay.fairPlayDecrypt(payloadBytes));
+                            airPlay.fairPlayDecryptVideoData(payloadBytes);
+                            processVideo(payloadBytes);
                         } else if (header.getPayloadType() == 1) {
                             processSPSPPS(payload);
                         } else {

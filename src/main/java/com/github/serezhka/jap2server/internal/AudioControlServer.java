@@ -1,6 +1,6 @@
 package com.github.serezhka.jap2server.internal;
 
-import com.github.serezhka.jap2server.internal.handler.audio.AudioHandler;
+import com.github.serezhka.jap2server.internal.handler.audio.AudioControlHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
@@ -15,21 +15,16 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 
-public class AudioReceiver implements Runnable {
+public class AudioControlServer implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(AudioReceiver.class);
-
-    private final AudioHandler audioHandler;
-
-    public AudioReceiver(AudioHandler audioHandler) {
-        this.audioHandler = audioHandler;
-    }
+    private static final Logger log = LoggerFactory.getLogger(AudioControlServer.class);
 
     @Override
     public void run() {
-        var port = 4998;
+        var port = 4999;
         var bootstrap = new Bootstrap();
         var workerGroup = eventLoopGroup();
+        var audioControlHandler = new AudioControlHandler();
 
         try {
             bootstrap
@@ -39,16 +34,16 @@ public class AudioReceiver implements Runnable {
                     .handler(new ChannelInitializer<DatagramChannel>() {
                         @Override
                         public void initChannel(final DatagramChannel ch) {
-                            ch.pipeline().addLast(audioHandler);
+                            ch.pipeline().addLast(audioControlHandler);
                         }
                     });
             var channelFuture = bootstrap.bind().sync();
-            log.info("Audio receiver listening on port: {}", port);
+            log.info("Audio control server listening on port: {}", port);
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            log.info("Audio receiver interrupted");
+            log.info("Audio control server interrupted");
         } finally {
-            log.info("Audio receiver stopped");
+            log.info("Audio control server stopped");
             workerGroup.shutdownGracefully();
         }
     }

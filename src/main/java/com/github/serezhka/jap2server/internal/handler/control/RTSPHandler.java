@@ -1,8 +1,10 @@
 package com.github.serezhka.jap2server.internal.handler.control;
 
 import com.github.serezhka.jap2server.MirrorDataConsumer;
+import com.github.serezhka.jap2server.internal.AudioControlServer;
 import com.github.serezhka.jap2server.internal.AudioReceiver;
 import com.github.serezhka.jap2server.internal.MirroringReceiver;
+import com.github.serezhka.jap2server.internal.handler.audio.AudioHandler;
 import com.github.serezhka.jap2server.internal.handler.mirroring.MirroringHandler;
 import com.github.serezhka.jap2server.internal.handler.session.Session;
 import com.github.serezhka.jap2server.internal.handler.session.SessionManager;
@@ -35,7 +37,7 @@ public class RTSPHandler extends ControlHandler {
         var response = createResponseForRequest(request);
         if (RtspMethods.SETUP.equals(request.method())) {
             session.getAirPlay().rtspSetup(new ByteBufInputStream(request.content()),
-                    new ByteBufOutputStream(response.content()), airPlayPort, airTunesPort, 7011, 4998, airTunesPort);
+                    new ByteBufOutputStream(response.content()), airPlayPort, airTunesPort, 7011, 4998, 4999);
 
             if (session.getAirPlay().isFairPlayReady() && session.getAirPlayReceiverThread() == null) {
                 var mirroringHandler = new MirroringHandler(session.getAirPlay(), mirrorDataConsumer);
@@ -43,17 +45,24 @@ public class RTSPHandler extends ControlHandler {
                 var airPlayReceiverThread = new Thread(airPlayReceiver);
                 session.setAirPlayReceiverThread(airPlayReceiverThread);
                 airPlayReceiverThread.start();
-                var audioReceiver = new AudioReceiver();
+                var audioHandler = new AudioHandler(session.getAirPlay());
+                var audioReceiver = new AudioReceiver(audioHandler);
                 new Thread(audioReceiver).start();
+                var audioControlServer = new AudioControlServer();
+                new Thread(audioControlServer).start();
             }
             return sendResponse(ctx, request, response);
         } else if (RtspMethods.GET_PARAMETER.equals(request.method())) {
-            byte[] content = "volume: 0.000000\r\n".getBytes(StandardCharsets.US_ASCII);
+            byte[] content = "volume: 1.000000\r\n".getBytes(StandardCharsets.US_ASCII);
             response.content().writeBytes(content);
             return sendResponse(ctx, request, response);
         } else if (RtspMethods.RECORD.equals(request.method())) {
+            response.headers().add("Audio-Latency", "11025");
+            response.headers().add("Audio-Jack-Status", "connected; type=analog");
             return sendResponse(ctx, request, response);
         } else if (RtspMethods.SET_PARAMETER.equals(request.method())) {
+            return sendResponse(ctx, request, response);
+        } else if ("FLUSH".equals(request.method().toString())) {
             return sendResponse(ctx, request, response);
         } else if (RtspMethods.TEARDOWN.equals(request.method())) {
             session.getAirPlayReceiverThread().interrupt();
