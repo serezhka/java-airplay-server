@@ -65,6 +65,10 @@ public class AudioHandler extends SimpleChannelInboundHandler<DatagramPacket> {
 
         log.debug("Got audio packet. flag: {}, type: {}, length: {}", flag, type, contentLength);
 
+        if (!aacDecoderInitialized) {
+            return;
+        }
+
         if (type == 96 || type == 86) {
             int off = 0;
             if (type == 86) {
