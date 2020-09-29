@@ -1,6 +1,6 @@
 package com.github.serezhka.jap2server.internal;
 
-import com.github.serezhka.jap2server.MirrorDataConsumer;
+import com.github.serezhka.jap2server.AirplayDataConsumer;
 import com.github.serezhka.jap2server.internal.handler.control.FairPlayHandler;
 import com.github.serezhka.jap2server.internal.handler.control.HeartBeatHandler;
 import com.github.serezhka.jap2server.internal.handler.control.PairingHandler;
@@ -39,12 +39,12 @@ public class ControlServer implements Runnable {
 
     private final int airTunesPort;
 
-    public ControlServer(int airPlayPort, int airTunesPort, MirrorDataConsumer mirrorDataConsumer) {
+    public ControlServer(int airPlayPort, int airTunesPort, AirplayDataConsumer airplayDataConsumer) {
         this.airTunesPort = airTunesPort;
         SessionManager sessionManager = new SessionManager();
         pairingHandler = new PairingHandler(sessionManager);
         fairPlayHandler = new FairPlayHandler(sessionManager);
-        rtspHandler = new RTSPHandler(airPlayPort, airTunesPort, sessionManager, mirrorDataConsumer);
+        rtspHandler = new RTSPHandler(airPlayPort, airTunesPort, sessionManager, airplayDataConsumer);
         heartBeatHandler = new HeartBeatHandler(sessionManager);
     }
 
@@ -65,7 +65,7 @@ public class ControlServer implements Runnable {
                                     new RtspDecoder(),
                                     new RtspEncoder(),
                                     new HttpObjectAggregator(64 * 1024),
-                                    new LoggingHandler(LogLevel.INFO),
+                                    new LoggingHandler(LogLevel.DEBUG),
                                     pairingHandler,
                                     fairPlayHandler,
                                     rtspHandler,

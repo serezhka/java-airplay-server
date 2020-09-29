@@ -1,6 +1,6 @@
 package com.github.serezhka.jap2server.internal.handler.control;
 
-import com.github.serezhka.jap2server.MirrorDataConsumer;
+import com.github.serezhka.jap2server.AirplayDataConsumer;
 import com.github.serezhka.jap2server.internal.AudioControlServer;
 import com.github.serezhka.jap2server.internal.AudioReceiver;
 import com.github.serezhka.jap2server.internal.MirroringReceiver;
@@ -20,14 +20,14 @@ import java.nio.charset.StandardCharsets;
 @ChannelHandler.Sharable
 public class RTSPHandler extends ControlHandler {
 
-    private final MirrorDataConsumer mirrorDataConsumer;
+    private final AirplayDataConsumer airplayDataConsumer;
     private final int airPlayPort;
     private final int airTunesPort;
 
     public RTSPHandler(int airPlayPort, int airTunesPort, SessionManager sessionManager,
-                       MirrorDataConsumer mirrorDataConsumer) {
+                       AirplayDataConsumer airplayDataConsumer) {
         super(sessionManager);
-        this.mirrorDataConsumer = mirrorDataConsumer;
+        this.airplayDataConsumer = airplayDataConsumer;
         this.airPlayPort = airPlayPort;
         this.airTunesPort = airTunesPort;
     }
@@ -39,18 +39,27 @@ public class RTSPHandler extends ControlHandler {
             session.getAirPlay().rtspSetup(new ByteBufInputStream(request.content()),
                     new ByteBufOutputStream(response.content()), airPlayPort, airTunesPort, 7011, 4998, 4999);
 
-            if (session.getAirPlay().isFairPlayReady() && session.getAirPlayReceiverThread() == null) {
-                var mirroringHandler = new MirroringHandler(session.getAirPlay(), mirrorDataConsumer);
+            if (session.getAirPlay().isFairPlayVideoDecryptorReady() && !session.isMirroringActive()) {
+                var mirroringHandler = new MirroringHandler(session.getAirPlay(), airplayDataConsumer);
                 var airPlayReceiver = new MirroringReceiver(airPlayPort, mirroringHandler);
                 var airPlayReceiverThread = new Thread(airPlayReceiver);
                 session.setAirPlayReceiverThread(airPlayReceiverThread);
                 airPlayReceiverThread.start();
-                var audioHandler = new AudioHandler(session.getAirPlay());
-                var audioReceiver = new AudioReceiver(audioHandler);
-                new Thread(audioReceiver).start();
-                var audioControlServer = new AudioControlServer();
-                new Thread(audioControlServer).start();
             }
+
+            if (session.getAirPlay().isFairPlayAudioDecryptorReady() && !session.isAudioActive()) {
+                var audioHandler = new AudioHandler(session.getAirPlay(), airplayDataConsumer);
+                var audioReceiver = new AudioReceiver(audioHandler);
+                var audioReceiverThread = new Thread(audioReceiver);
+                session.setAudioReceiverThread(audioReceiverThread);
+                audioReceiverThread.start();
+
+                var audioControlServer = new AudioControlServer();
+                var audioControlServerThread = new Thread(audioControlServer);
+                session.setAudioControlServerThread(audioControlServerThread);
+                audioControlServerThread.start();
+            }
+
             return sendResponse(ctx, request, response);
         } else if (RtspMethods.GET_PARAMETER.equals(request.method())) {
             byte[] content = "volume: 1.000000\r\n".getBytes(StandardCharsets.US_ASCII);
@@ -65,7 +74,11 @@ public class RTSPHandler extends ControlHandler {
         } else if ("FLUSH".equals(request.method().toString())) {
             return sendResponse(ctx, request, response);
         } else if (RtspMethods.TEARDOWN.equals(request.method())) {
-            session.getAirPlayReceiverThread().interrupt();
+            // TODO mirroring or audio
+            session.stopAudio();
+            session.stopMirroring();
+            return sendResponse(ctx, request, response);
+        } else if ("POST".equals(request.method().toString()) && request.uri().equals("/audioMode")) {
             return sendResponse(ctx, request, response);
         }
         return false;

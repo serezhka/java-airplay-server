@@ -1,7 +1,7 @@
 package com.github.serezhka.jap2server.internal.handler.mirroring;
 
 import com.github.serezhka.jap2lib.AirPlay;
-import com.github.serezhka.jap2server.MirrorDataConsumer;
+import com.github.serezhka.jap2server.AirplayDataConsumer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,12 +15,12 @@ public class MirroringHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     private final ByteBuf headerBuf = ByteBufAllocator.DEFAULT.ioBuffer(128, 128);
     private final AirPlay airPlay;
-    private final MirrorDataConsumer dataConsumer;
+    private final AirplayDataConsumer dataConsumer;
 
     private MirroringHeader header;
     private ByteBuf payload;
 
-    public MirroringHandler(AirPlay airPlay, MirrorDataConsumer dataConsumer) {
+    public MirroringHandler(AirPlay airPlay, AirplayDataConsumer dataConsumer) {
         this.airPlay = airPlay;
         this.dataConsumer = dataConsumer;
     }
@@ -52,12 +52,12 @@ public class MirroringHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
                     try {
                         if (header.getPayloadType() == 0) {
-                            airPlay.fairPlayDecryptVideoData(payloadBytes);
+                            airPlay.decryptVideo(payloadBytes);
                             processVideo(payloadBytes);
                         } else if (header.getPayloadType() == 1) {
                             processSPSPPS(payload);
                         } else {
-                            log.warn("Unhandled payload type: {}", header.getPayloadType());
+                            log.debug("Unhandled payload type: {}", header.getPayloadType());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -91,7 +91,7 @@ public class MirroringHandler extends SimpleChannelInboundHandler<ByteBuf> {
             }
         }
 
-        dataConsumer.onData(payload);
+        dataConsumer.onVideo(payload);
     }
 
     private void processSPSPPS(ByteBuf payload) {
@@ -121,6 +121,6 @@ public class MirroringHandler extends SimpleChannelInboundHandler<ByteBuf> {
         spsPps[spsLen + 7] = 1;
         System.arraycopy(pictureParameterSet, 0, spsPps, 8 + spsLen, ppsLen);
 
-        dataConsumer.onData(spsPps);
+        dataConsumer.onVideo(spsPps);
     }
 }

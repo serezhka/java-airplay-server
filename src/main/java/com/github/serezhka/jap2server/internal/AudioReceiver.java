@@ -3,6 +3,7 @@ package com.github.serezhka.jap2server.internal;
 import com.github.serezhka.jap2server.internal.handler.audio.AudioHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollDatagramChannel;
@@ -36,6 +37,7 @@ public class AudioReceiver implements Runnable {
                     .group(workerGroup)
                     .channel(datagramChannelClass())
                     .localAddress(new InetSocketAddress(port))
+                    .option(ChannelOption.SO_KEEPALIVE, true)
                     .handler(new ChannelInitializer<DatagramChannel>() {
                         @Override
                         public void initChannel(final DatagramChannel ch) {

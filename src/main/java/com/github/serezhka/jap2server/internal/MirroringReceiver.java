@@ -49,12 +49,12 @@ public class MirroringReceiver implements Runnable {
                     .childOption(ChannelOption.SO_REUSEADDR, true)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             var channelFuture = serverBootstrap.bind().sync();
-            log.info("AirPlay receiver listening on port: {}", port);
+            log.info("Mirroring receiver listening on port: {}", port);
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            log.info("AirPlay receiver interrupted");
+            log.info("Mirroring receiver interrupted");
         } finally {
-            log.info("AirPlay receiver stopped");
+            log.info("Mirroring receiver stopped");
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
