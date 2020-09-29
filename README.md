@@ -10,23 +10,33 @@ It's under development.
 
 * Add java-airplay-server [dependency](https://jitpack.io/#serezhka/java-airplay-server) to your project
 
-* Implement MirrorDataConsumer and start AirPlayServer, for example:
+* Implement AirplayDataConsumer and start AirPlayServer, for example:
 ```java
-  String dumpName = "dump.h264";
-  var fileChannel = FileChannel.open(Paths.get(dumpName), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+FileChannel videoFileChannel = FileChannel.open(Paths.get("video.h264"), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+FileChannel audioFileChannel = FileChannel.open(Paths.get("audio.pcm"), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
 
-  MirrorDataConsumer h264Dump = data -> {
-      try {
-          fileChannel.write(ByteBuffer.wrap(data));
-      } catch (IOException e) {
-          e.printStackTrace();
-      }
-  };
+AirplayDataConsumer dumper = new AirplayDataConsumer() {
+    
+    @Override
+    public void onVideo(byte[] video) {
+        videoFileChannel.write(ByteBuffer.wrap(video));
+    }
 
-  String serverName = "AirPlayServer";
-  int airPlayPort = 15614;
-  int airTunesPort = 5001;
-  new AirPlayServer(serverName, airPlayPort, airTunesPort, h264Dump).start();
+    
+    @Override
+    public void onAudio(byte[] audio) {
+        if (FdkAacLib.isInitialized()) {
+            byte[] audioDecoded = new byte[480 * 4];
+            FdkAacLib.decodeFrame(audio, audioDecoded);
+            audioFileChannel.write(ByteBuffer.wrap(audioDecoded));
+        }
+    }
+};
+
+String serverName = "AirPlayServer";
+int airPlayPort = 15614;
+int airTunesPort = 5001;
+new AirPlayServer(serverName, airPlayPort, airTunesPort, dumper).start();
 ```
 
 ## More examples
