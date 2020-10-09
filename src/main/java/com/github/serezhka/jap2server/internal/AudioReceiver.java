@@ -3,7 +3,6 @@ package com.github.serezhka.jap2server.internal;
 import com.github.serezhka.jap2server.internal.handler.audio.AudioHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollDatagramChannel;
@@ -21,14 +20,17 @@ public class AudioReceiver implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(AudioReceiver.class);
 
     private final AudioHandler audioHandler;
+    private final Object monitor;
 
-    public AudioReceiver(AudioHandler audioHandler) {
+    private int port;
+
+    public AudioReceiver(AudioHandler audioHandler, Object monitor) {
         this.audioHandler = audioHandler;
+        this.monitor = monitor;
     }
 
     @Override
     public void run() {
-        var port = 4998;
         var bootstrap = new Bootstrap();
         var workerGroup = eventLoopGroup();
 
@@ -36,8 +38,7 @@ public class AudioReceiver implements Runnable {
             bootstrap
                     .group(workerGroup)
                     .channel(datagramChannelClass())
-                    .localAddress(new InetSocketAddress(port))
-                    .option(ChannelOption.SO_KEEPALIVE, true)
+                    .localAddress(new InetSocketAddress(0)) // bind random port
                     .handler(new ChannelInitializer<DatagramChannel>() {
                         @Override
                         public void initChannel(final DatagramChannel ch) {
@@ -45,7 +46,14 @@ public class AudioReceiver implements Runnable {
                         }
                     });
             var channelFuture = bootstrap.bind().sync();
-            log.info("Audio receiver listening on port: {}", port);
+
+            log.info("Audio receiver listening on port: {}",
+                    port = ((InetSocketAddress) channelFuture.channel().localAddress()).getPort());
+
+            synchronized (monitor) {
+                monitor.notify();
+            }
+
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             log.info("Audio receiver interrupted");
@@ -53,6 +61,10 @@ public class AudioReceiver implements Runnable {
             log.info("Audio receiver stopped");
             workerGroup.shutdownGracefully();
         }
+    }
+
+    public int getPort() {
+        return port;
     }
 
     private EventLoopGroup eventLoopGroup() {

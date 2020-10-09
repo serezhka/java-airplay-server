@@ -57,17 +57,24 @@ public class RTSPHandler extends ControlHandler {
                         }
 
                         var audioHandler = new AudioHandler(session.getAirPlay(), airplayDataConsumer);
-                        var audioReceiver = new AudioReceiver(audioHandler);
+                        var audioReceiver = new AudioReceiver(audioHandler, this);
                         var audioReceiverThread = new Thread(audioReceiver);
                         session.setAudioReceiverThread(audioReceiverThread);
                         audioReceiverThread.start();
+                        synchronized (this) {
+                            wait();
+                        }
 
-                        var audioControlServer = new AudioControlServer();
+                        var audioControlServer = new AudioControlServer(this);
                         var audioControlServerThread = new Thread(audioControlServer);
                         session.setAudioControlServerThread(audioControlServerThread);
                         audioControlServerThread.start();
+                        synchronized (this) {
+                            wait();
+                        }
 
-                        session.getAirPlay().rtspSetupAudio(new ByteBufOutputStream(response.content()), 4998, 4999);
+                        session.getAirPlay().rtspSetupAudio(new ByteBufOutputStream(response.content()),
+                                audioReceiver.getPort(), audioControlServer.getPort());
                         break;
 
                     case VIDEO:

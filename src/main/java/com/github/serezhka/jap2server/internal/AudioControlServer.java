@@ -19,9 +19,16 @@ public class AudioControlServer implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(AudioControlServer.class);
 
+    private final Object monitor;
+
+    private int port;
+
+    public AudioControlServer(Object monitor) {
+        this.monitor = monitor;
+    }
+
     @Override
     public void run() {
-        var port = 4999;
         var bootstrap = new Bootstrap();
         var workerGroup = eventLoopGroup();
         var audioControlHandler = new AudioControlHandler();
@@ -30,15 +37,23 @@ public class AudioControlServer implements Runnable {
             bootstrap
                     .group(workerGroup)
                     .channel(datagramChannelClass())
-                    .localAddress(new InetSocketAddress(port))
+                    .localAddress(new InetSocketAddress(0)) // bind random port
                     .handler(new ChannelInitializer<DatagramChannel>() {
                         @Override
                         public void initChannel(final DatagramChannel ch) {
                             ch.pipeline().addLast(audioControlHandler);
                         }
                     });
+
             var channelFuture = bootstrap.bind().sync();
-            log.info("Audio control server listening on port: {}", port);
+
+            log.info("Audio control server listening on port: {}",
+                    port = ((InetSocketAddress) channelFuture.channel().localAddress()).getPort());
+
+            synchronized (monitor) {
+                monitor.notify();
+            }
+
             channelFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             log.info("Audio control server interrupted");
@@ -46,6 +61,10 @@ public class AudioControlServer implements Runnable {
             log.info("Audio control server stopped");
             workerGroup.shutdownGracefully();
         }
+    }
+
+    public int getPort() {
+        return port;
     }
 
     private EventLoopGroup eventLoopGroup() {
