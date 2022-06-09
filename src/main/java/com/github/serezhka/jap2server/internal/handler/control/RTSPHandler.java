@@ -2,6 +2,7 @@ package com.github.serezhka.jap2server.internal.handler.control;
 
 import com.github.serezhka.jap2lib.rtsp.AudioStreamInfo;
 import com.github.serezhka.jap2lib.rtsp.MediaStreamInfo;
+import com.github.serezhka.jap2lib.rtsp.VideoStreamInfo;
 import com.github.serezhka.jap2server.AirplayDataConsumer;
 import com.github.serezhka.jap2server.internal.AudioControlServer;
 import com.github.serezhka.jap2server.internal.AudioReceiver;
@@ -52,9 +53,11 @@ public class RTSPHandler extends ControlHandler {
                     case AUDIO:
                         AudioStreamInfo audioStreamInfo = (AudioStreamInfo) mediaStreamInfo;
 
-                        if (!audioStreamInfo.getAudioFormat().equals(AudioStreamInfo.AudioFormat.AAC_ELD_44100_2)) {
-                            log.error("Audio format {} is not supported yet!", audioStreamInfo.getAudioFormat());
-                        }
+                        log.info("Audio format is: {}", audioStreamInfo.getAudioFormat());
+                        log.info("Audio compression type is: {}", audioStreamInfo.getCompressionType());
+                        log.info("Audio samples per frame is: {}", audioStreamInfo.getSamplesPerFrame());
+
+                        airplayDataConsumer.onAudioFormat(audioStreamInfo);
 
                         var audioHandler = new AudioHandler(session.getAirPlay(), airplayDataConsumer);
                         var audioReceiver = new AudioReceiver(audioHandler, this);
@@ -75,9 +78,14 @@ public class RTSPHandler extends ControlHandler {
 
                         session.getAirPlay().rtspSetupAudio(new ByteBufOutputStream(response.content()),
                                 audioReceiver.getPort(), audioControlServer.getPort());
+
                         break;
 
                     case VIDEO:
+                        VideoStreamInfo videoStreamInfo = (VideoStreamInfo) mediaStreamInfo;
+
+                        airplayDataConsumer.onVideoFormat(videoStreamInfo);
+
                         var mirroringHandler = new MirroringHandler(session.getAirPlay(), airplayDataConsumer);
                         var airPlayReceiver = new MirroringReceiver(airPlayPort, mirroringHandler);
                         var airPlayReceiverThread = new Thread(airPlayReceiver);

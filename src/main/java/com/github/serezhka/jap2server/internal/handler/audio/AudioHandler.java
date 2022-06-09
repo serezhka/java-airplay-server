@@ -54,8 +54,8 @@ public class AudioHandler extends SimpleChannelInboundHandler<DatagramPacket> {
             return;
         }
 
-        log.debug("Got audio packet. flag: {}, type: {}, prevSeqNum: {}, curSecNum: {}, audio packets in buffer: {}",
-                flag, type, prevSeqNum, curSeqNo, packetsInBuffer);
+        /*log.debug("Got audio packet. flag: {}, type: {}, prevSeqNum: {}, curSecNum: {}, audio packets in buffer: {}",
+                flag, type, prevSeqNum, curSeqNo, packetsInBuffer);*/
 
         AudioPacket audioPacket = buffer[curSeqNo % buffer.length];
         audioPacket

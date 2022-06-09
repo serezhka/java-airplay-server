@@ -1,16 +1,14 @@
 plugins {
-    id 'maven'
     id 'java-library'
 }
 
 group 'com.github.serezhka'
-version '1.0.4'
+version '1.0.5'
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
 repositories {
-    jcenter()
     mavenCentral()
     maven {
         url "https://jitpack.io"
@@ -18,13 +16,13 @@ repositories {
 }
 
 dependencies {
-    implementation "io.netty:netty-all:4.1.52.Final"
-    implementation "org.slf4j:slf4j-api:1.7.30"
-    implementation "com.github.serezhka:java-airplay-lib:1.0.4"
-    // implementation files('C:\\projects\\java-airplay-lib\\build\\libs\\java-airplay-lib-1.0.4-all.jar')
+    implementation 'io.netty:netty-all:4.1.77.Final'
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'com.github.serezhka:java-airplay-lib:1.0.5'
+    // implementation files("$project.rootDir\\..\\java-airplay-lib\\build\\libs\\java-airplay-lib-1.0.5-all.jar")
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.4.2"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.4.2"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }
 
 test {
@@ -32,18 +30,19 @@ test {
 }
 
 wrapper {
-    gradleVersion = '6.1.1'
+    gradleVersion = '7.4.2'
     distributionType = Wrapper.DistributionType.ALL
 }
 
 task fatJar(type: Jar) {
-    classifier = 'all'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveClassifier.set('all')
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
 
 task jarSources(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier.set('sources')
     from sourceSets.main.allSource
 }
 
